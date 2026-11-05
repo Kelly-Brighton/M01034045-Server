@@ -2,6 +2,14 @@ var express = require("express");
 var cors = require("cors");
 var path = require("path");
 var app = express();
+require("dotenv").config({ path: "./config.env"});
+
+// Mongodb connection setup
+const { MongoClient, ObjectId } = require("mongodb");
+const uri = process.env.MONGODB_PREFIX + process.env.MONGODB_USERNAME + ":" + 
+process.env.MONGODB_PASSWORD + process.env.MONGODB_URL;
+const client = new MongoClient(uri);
+const db = client.db("ExtraLessons");
 
 app.use(cors());
 app.use(express.json());
@@ -15,36 +23,10 @@ app.use(function(request, response, next){
     next();
 });
 
-app.get("/lessons", function(request, response) {
-    response.json([
-        {
-            title: 'Painting and Drawing',
-            id: 1001,
-            location: 'Hendon',
-            price: 49.99,
-            image: "art.jpg",
-            imageText: "Art Lesson Image",
-            availability: 5
-        },
-        {
-            title: 'Sculpture and Clay Modelling',
-            id: 1002,
-            location: 'Hendon',
-            price: 59.99,
-            image: "sculptor.jpeg",
-            imageText: "Sculpture Lesson Image",
-            availability: 5
-        },
-        {
-            title: 'Photography Basics',
-            id: 1003,
-            location: 'Hendon',
-            price: 39.99,
-            image: "photography.webp",
-            imageText: "Photography Lesson Image",
-            availability: 5
-        }
-    ]);
+app.get("/lessons", async function(request, response) {
+    let collection = await db.collection("Lessons");
+    let results = await collection.find({}).toArray();
+    response.send(results);
 });
 
 // Set up the path where your static files are
