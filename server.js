@@ -29,6 +29,8 @@ app.get("/lessons", async function(request, response) {
     response.send(results);
 });
 
+
+
 // Set up the path where your static files are
 var publicPath = path.resolve(__dirname, "images");
 
@@ -40,8 +42,9 @@ app.use("/images", function(request, response){
     response.status(404).send("Image not found!");
 });
 
-app.post("/orders", function(request, response){
+app.post("/orders", async function(request, response){
     var order = request.body;
+    console.log();
     console.log("New Order Details: "
         + "\nCustomer name: " + order.name
         + "\nTelephone number: " + order.phone
@@ -58,7 +61,10 @@ app.post("/orders", function(request, response){
         );
         console.log();
     });
-    response.json({message: "Order received!"});
+
+    let collection = await db.collection("Orders");
+    let result = await collection.insertOne(order);
+    response.send(result);
 })
 
 app.use(function (request, response, next) {
