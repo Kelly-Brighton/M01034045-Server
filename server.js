@@ -65,7 +65,21 @@ app.post("/orders", async function(request, response){
     let collection = await db.collection("Orders");
     let result = await collection.insertOne(order);
     response.send(result);
-})
+});
+
+app.put("/lessons/:_id", async function(request, response) {
+    var body = request.body;
+    let collection = await db.collection("Lessons");
+    let tempid = request.params._id; 
+
+    const query = { _id: new ObjectId(tempid) };
+    const updates = {
+        $set: request.body
+    };
+    result = await collection.updateOne(query, updates);
+    response.send(result);
+    console.log(result);
+});
 
 app.use(function (request, response, next) {
     response.status(404).send("Request not recognised");
