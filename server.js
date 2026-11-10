@@ -77,6 +77,21 @@ app.post("/orders", async function(request, response){
     response.send(result);
 });
 
+// Add a new lesson to the database only if the telephone number does not match the one in the database
+app.post("/lessons/:phone", async function(request, response) {
+    var body = request.body;
+    let collection = await db.collection("Lessons");
+    let phone = request.params.phone;
+
+    const existingPhone = await collection.findOne({ phone: phone });
+    if (existingPhone) {
+        return response.status(400).send("Lesson with this telephone number already exists.");
+    }
+
+    let result = await collection.insertOne(body);
+    response.send(result);
+});
+
 // Update a lesson in the database
 app.put("/lessons/:_id", async function(request, response) {
     var body = request.body;
