@@ -19,18 +19,26 @@ app.listen(port, function () {
     console.log("App started on port " + port);
 });
 
+// Log all requests to the console
 app.use(function(request, response, next){
     console.log("In comes a request of method " + request.method + " to URL " + request.url);
     next();
 });
 
+// Get all lessons
 app.get("/lessons", async function(request, response) {
     let collection = await db.collection("Lessons");
     let results = await collection.find({}).toArray();
     response.send(results);
 });
 
-
+// Get lessons with availability greater than 1
+app.get("/altlessons", async function(request, response) {
+    const collection = await db.collection("Lessons");
+    const query = { availability: { $gt : 1}};
+    const results = await collection.find(query).toArray();
+    response.send(results);
+});
 
 // Set up the path where your static files are
 var publicPath = path.resolve(__dirname, "images");
@@ -43,6 +51,7 @@ app.use("/images", function(request, response){
     response.status(404).send("Image not found!");
 });
 
+// Add a new order to the database
 app.post("/orders", async function(request, response){
     var order = request.body;
     console.log();
@@ -68,6 +77,7 @@ app.post("/orders", async function(request, response){
     response.send(result);
 });
 
+// Update a lesson in the database
 app.put("/lessons/:_id", async function(request, response) {
     var body = request.body;
     let collection = await db.collection("Lessons");
@@ -82,6 +92,26 @@ app.put("/lessons/:_id", async function(request, response) {
     console.log(result);
 });
 
+// Update a lesson in the database only if the telephone number does not match the one in the database
+app.put("/lessons/:_id/:phone", async function(request, response) {
+    var body = request.body;
+    let collection = await db.collection("Lessons");
+    let tempid = request.params._id; 
+    let phone = request.params.phone;
+
+    const query = { 
+        _id: new ObjectId(tempid), 
+        phone: { $ne: phone } 
+    };
+    const updates = {
+        $set: request.body
+    };
+    result = await collection.updateOne(query, updates);
+    response.send(result);
+    console.log(result);
+});
+
+// If the request is not recognised, return an error message
 app.use(function (request, response, next) {
     response.status(404).send("Request not recognised");
 });
